@@ -25,7 +25,6 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
-@Component
 public class ExcelTemplateAdapter implements PdfGenerator {
 
     private final ResourceLoader resourceLoader;

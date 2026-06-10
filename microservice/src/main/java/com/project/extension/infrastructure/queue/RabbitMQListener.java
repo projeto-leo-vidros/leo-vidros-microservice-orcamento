@@ -30,17 +30,33 @@ public class RabbitMQListener {
 
         @RabbitListener(queues = "fila.orcamento.pdf")
         public void receberMensagem(OrcamentoDTO payload) {
+            String numero = payload.numeroOrcamento();
+            Long id = payload.id();
+            String cliente = payload.cliente() != null ? payload.cliente().nome() : "N/A";
+            int qtdItens = payload.itens() != null ? payload.itens().size() : 0;
+
+            log.info("[PDF] Solicitação recebida — numero={} id={} cliente='{}' itens={}",
+                    numero, id, cliente, qtdItens);
+
+            long inicio = System.currentTimeMillis();
             try {
-                log.info("Mensagem recebida da fila para o orçamento ID: {} número: {}", payload.id(), payload.numeroOrcamento());
                 byte[] pdfBytes = useCase.executar(payload);
+                long duracao = System.currentTimeMillis() - inicio;
+
+                log.info("[PDF] Gerado com sucesso — numero={} id={} tamanho={}KB duracao={}ms",
+                        numero, id, pdfBytes.length / 1024, duracao);
 
                 rabbitTemplate.convertAndSend(
                         RabbitMQConfig.RESPONSE_FANOUT_EXCHANGE,
                         "",
-                        new OrcamentoPdfResponseDTO(payload.id(), payload.numeroOrcamento(), pdfBytes)
+                        new OrcamentoPdfResponseDTO(id, numero, pdfBytes)
                 );
+
+                log.info("[PDF] Resposta publicada na fila de retorno — numero={} id={}", numero, id);
             } catch (GeracaoPdfException e) {
-                log.error("Erro no processamento assíncrono: {}", e.getMessage(), e);
+                long duracao = System.currentTimeMillis() - inicio;
+                log.error("[PDF] Falha na geração — numero={} id={} duracao={}ms motivo='{}'",
+                        numero, id, duracao, e.getMessage(), e);
                 throw e;
             }
         }
@@ -61,18 +77,33 @@ public class RabbitMQListener {
 
         @RabbitListener(queues = "fila.orcamento.pdf")
         public void receberMensagem(OrcamentoDTO payload) {
-            try {
-                log.info("Mensagem recebida da fila para o orçamento ID: {} número: {}", payload.id(), payload.numeroOrcamento());
-                useCase.executar(payload);
+            String numero = payload.numeroOrcamento();
+            Long id = payload.id();
+            String cliente = payload.cliente() != null ? payload.cliente().nome() : "N/A";
+            int qtdItens = payload.itens() != null ? payload.itens().size() : 0;
 
-                String nomeArquivo = "orcamento_" + payload.numeroOrcamento() + ".pdf";
+            log.info("[PDF] Solicitação recebida — numero={} id={} cliente='{}' itens={}",
+                    numero, id, cliente, qtdItens);
+
+            long inicio = System.currentTimeMillis();
+            try {
+                useCase.executar(payload);
+                long duracao = System.currentTimeMillis() - inicio;
+
+                log.info("[PDF] Gerado com sucesso — numero={} id={} duracao={}ms", numero, id, duracao);
+
+                String nomeArquivo = "orcamento_" + numero + ".pdf";
                 rabbitTemplate.convertAndSend(
                         RabbitMQConfig.RESPONSE_FANOUT_EXCHANGE,
                         "",
-                        new OrcamentoPdfProdResponseDTO(payload.id(), payload.numeroOrcamento(), nomeArquivo)
+                        new OrcamentoPdfProdResponseDTO(id, numero, nomeArquivo)
                 );
+
+                log.info("[PDF] Resposta publicada na fila de retorno — numero={} id={}", numero, id);
             } catch (GeracaoPdfException e) {
-                log.error("Erro no processamento assíncrono: {}", e.getMessage(), e);
+                long duracao = System.currentTimeMillis() - inicio;
+                log.error("[PDF] Falha na geração — numero={} id={} duracao={}ms motivo='{}'",
+                        numero, id, duracao, e.getMessage(), e);
                 throw e;
             }
         }

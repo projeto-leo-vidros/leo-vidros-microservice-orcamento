@@ -36,20 +36,17 @@ public class OpenPdfAdapter implements PdfGenerator {
             document.add(new Paragraph("Data: " + dados.dataOrcamento()));
             document.add(new Paragraph("Cliente: " + dados.cliente().nome()));
             document.add(new Paragraph("E-mail: " + dados.cliente().email()));
-            document.add(new Paragraph(" ")); // Espaço em branco
+            document.add(new Paragraph(" "));
 
             // --- TABELA DE ITENS ---
-            // Criamos uma tabela com 4 colunas: Descrição, Qtd, Preço Unit., Subtotal
             PdfPTable table = new PdfPTable(4);
             table.setWidthPercentage(100);
             table.setSpacingBefore(10f);
             table.setSpacingAfter(10f);
-            table.setWidths(new float[]{4f, 1f, 2f, 2f}); // Ajusta a largura relativa das colunas
+            table.setWidths(new float[]{4f, 1f, 2f, 2f});
 
-            // Estilização do Cabeçalho da Tabela
             addTableHeader(table);
 
-            // Adicionando os itens do DTO
             for (OrcamentoItemDTO item : dados.itens()) {
                 table.addCell(item.descricao());
                 table.addCell(String.valueOf(item.quantidade()));
