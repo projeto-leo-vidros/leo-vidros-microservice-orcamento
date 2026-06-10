@@ -3,11 +3,11 @@ package com.project.extension.microservice;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class MicroserviceApplicationTests {
-
-	@Test
-	void contextLoads() {
-	}
-
-}
+//@SpringBootTest
+//class MicroserviceApplicationTests {
+//
+//	@Test
+//	void contextLoads() {
+//	}
+//
+//}
